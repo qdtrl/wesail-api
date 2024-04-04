@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// export type MessageProps = {
+//   id: string
+//   content: string
+//   created_at: number
+//   user_id: string
+//   images: string[]
+// }
+
+// export type UserProps = {
+//   id: string
+//   name: string
+//   first_name: string
+//   last_name: string
+//   icon_url: string
+//   blocked: string[]
+//   followings: string[]
+//   followers: string[]
+//   boats: string[]
+//   images: string[]
+//   description: string
+//   birth_date: number
+
+//   created_at: number
+// }
+
+// export type ConversationProps = {
+//   id: string
+//   name: string
+//   created_at: number
+//   icon_url: string
+//   users: string[]
+//   admins: string[]
+// }
+
+enum SubscriptionType {
+  FREE
+  PREMIUM
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  firstName String
+  lastName  String
+  password  String
+  iconUrl   String
+  birthDate DateTime
+  subscriptionType SubscriptionType @default(FREE)
+  description String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Boat {
+  id        String   @id @default(cuid())
+  name      String
+  number    String
+  boatType  String
+  imageUrl  String
+  club      String
+  sponsors  String[]
+  images    String[]
+  length    Float
+  width     Float
+  draft     Float
+  weight    Float
+  sailArea  Float
+  engine    String
+  fuel      String
+  water     Float
+  year      Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
