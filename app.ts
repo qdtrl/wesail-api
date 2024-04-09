@@ -12,6 +12,9 @@ declare global {
   }
 }
 
+import authRoute from "./src/routes/auth.route";
+import userRoute from "./src/routes/user.route";
+
 export default function (database: any) {
   const app = express();
 
@@ -21,12 +24,12 @@ export default function (database: any) {
       req.database = database;
       next();
     })
-    .use("/", (req: any, res: any) => {
+    .use("/api", (req: any, res: any) => {
       res.send("Welcome to the Boat API");
     });
 
-  app.use("/auth", require("./routes/auth.route"));
-  app.use("/user", verifyToken, require("./routes/user.route"));
+  app.use("/auth", authRoute);
+  app.use("/user", verifyToken, userRoute);
 
   return app;
 }
