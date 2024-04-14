@@ -25,9 +25,6 @@ export default function (database: any) {
     .use((req: Request, res: Response, next: NextFunction) => {
       req.database = database;
       next();
-    })
-    .use("/api", (req: any, res: any) => {
-      res.send("Welcome to the Boat API");
     });
 
   app.use("/auth", authRoute);

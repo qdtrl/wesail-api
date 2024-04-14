@@ -53,6 +53,19 @@ describe("GET /users", () => {
       expect(response.body).not.toBeNull();
     });
 
+    test("should respond with a 400 status code", async () => {
+      findMany.mockImplementation(() => {
+        return undefined;
+      });
+      const response = await request(app)
+        .get("/users")
+        .set("Authorization", `Bearer ${token}`);
+      expect(findMany.mock.calls.length).toBe(1);
+      expect(response.statusCode).toBe(400);
+      expect(response.body).not.toBeNull();
+      expect(response.body.message).toBe("No users found");
+    });
+
     test("should respond with a 401 status code No token provided", async () => {
       const response = await request(app)
         .get("/users")
@@ -80,161 +93,187 @@ describe("GET /users", () => {
   });
 });
 
-// describe("GET /users/:id", () => {
-//   describe("given a valid user id", () => {
-//     const dataUserId = [1, 2, 3];
-//     test("should respond with a 200 status code", async () => {
-//       for (const userId of dataUserId) {
-//         findUnique.mockReset();
-//         findUnique.mockImplementation(() => {
-//           return {
-//             user: {
-//               id: userId,
-//             },
-//           };
-//         });
-//         const response = await request(app).get(`/users/${userId}`);
-//         expect(findUnique.mock.calls.length).toBe(1);
-//         expect(findUnique.mock.calls[0][0]).toBe(userId);
-//         expect(response.statusCode).toBe(200);
-//         expect(response.body).not.toBeNull();
-//       }
-//     });
-//   });
+describe("GET /users/:id", () => {
+  describe("given a valid user id", () => {
+    const dataUserId = [1, 2, 3];
+    test("should respond with a 200 status code", async () => {
+      for (const userId of dataUserId) {
+        findUnique.mockReset();
+        findUnique.mockImplementation(() => {
+          return {
+            user: {
+              id: userId,
+            },
+          };
+        });
+        const response = await request(app)
+          .get(`/users/${userId}`)
+          .set("Authorization", `Bearer ${token}`);
+        expect(findUnique.mock.calls.length).toBe(1);
+        expect(response.statusCode).toBe(200);
+        expect(response.body).not.toBeNull();
+        expect(response.body.user.id).toEqual(userId);
+      }
+    });
+  });
 
-//   describe("given an invalid user id", () => {
-//     const dataUserId = ["0", "abc"];
-//     test("should respond with a 404 status code", async () => {
-//       for (const userId of dataUserId) {
-//         findUnique.mockReset();
-//         const response = await request(app).get(`/users/${userId}`);
-//         expect(findUnique.mock.calls.length).toBe(0);
-//         expect(response.statusCode).toBe(404);
-//         expect(response.body).not.toBeNull();
-//       }
-//     });
-//   });
+  describe("user not found", () => {
+    test("should respond with a 400 status code", async () => {
+      findUnique.mockReset();
+      findUnique.mockImplementation(() => {});
+      const response = await request(app)
+        .get(`/users/1`)
+        .set("Authorization", `Bearer ${token}`);
+      expect(findUnique.mock.calls.length).toBe(1);
+      expect(response.statusCode).toBe(400);
+      expect(response.body).not.toBeNull();
+      expect(response.body.message).toBe("User not found");
+    });
+  });
 
-//   describe("given an user id that does not exist", () => {
-//     const dataUserId = [2, 3, 4];
-//     test("should respond with a 404 status code", async () => {
-//       for (const userId of dataUserId) {
-//         findUnique.mockReset();
-//         findUnique.mockImplementation(() => {});
-//         const response = await request(app).get(`/users/${userId}`);
-//         expect(findUnique.mock.calls.length).toBe(1);
-//         expect(response.statusCode).toBe(404);
-//         expect(response.body).not.toBeNull();
-//       }
-//     });
-//   });
-// });
+  describe("given an invalid user id", () => {
+    const dataUserId = ["12a0", "abc"];
+    test("should respond with a 400 status code", async () => {
+      for (const userId of dataUserId) {
+        findUnique.mockReset();
+        const response = await request(app)
+          .get(`/users/${userId}`)
+          .set("Authorization", `Bearer ${token}`);
+        expect(findUnique.mock.calls.length).toBe(0);
+        expect(response.statusCode).toBe(400);
+        expect(response.body).not.toBeNull();
+        expect(response.body.message).toBe("Id must be a number");
+      }
+    });
+  });
 
-// describe("PUT /users/:id", () => {
-//   describe("given a valid user id", () => {
-//     const dataUserId = [1, 2, 3];
-//     test("should respond with a 200 status code", async () => {
-//       for (const userId of dataUserId) {
-//         update.mockReset();
-//         update.mockImplementation(() => {
-//           return {
-//             user: {
-//               id: userId,
-//               language: "en",
-//               dark_mode: true,
-//               license: "MIT",
-//             },
-//           };
-//         });
-//         const response = await request(app)
-//           .put(`/users/${userId}`)
-//           .send({ language: "en", dark_mode: true, license: "MIT" });
-//         expect(update.mock.calls.length).toBe(1);
-//         expect(update.mock.calls[0][0]).toBe(userId);
-//         expect(response.statusCode).toBe(200);
-//         expect(response.body).not.toBeNull();
-//       }
-//     });
-//   });
+  describe("PUT /users/:id", () => {
+    describe("given a valid user id", () => {
+      test("should respond with a 200 status code", async () => {
+        update.mockReset();
+        update.mockImplementation(() => {
+          return {
+            user: {
+              id: 1,
+              language: "en",
+              dark_mode: true,
+              license: "MIT",
+              avatar: "avatar",
+              password:
+                "$2b$10$.vLEpdX7I5XqGqJuNknOSOvRHQlTL9TlMhEGR0SYD3BoCYMlSiQq6",
+            },
+          };
+        });
+        const response = await request(app)
+          .put(`/users/${1}`)
+          .send({
+            language: "en",
+            dark_mode: true,
+            password: "password",
+            license: "MIT",
+            avatar: "avatar",
+          })
+          .set("Authorization", `Bearer ${token}`);
+        expect(update.mock.calls.length).toBe(1);
+        expect(response.statusCode).toBe(200);
+        expect(response.body).not.toBeNull();
+        expect(response.body.user.id).toEqual(1);
+        expect(response.body.user.language).toBe("en");
+        expect(response.body.user.dark_mode).toBe(true);
+        expect(response.body.user.license).toBe("MIT");
+        expect(response.body.user.password).not.toBeNull();
+      });
+    });
+  });
 
-//   describe("given an invalid user id", () => {
-//     const dataUserId = ["0", "abc"];
-//     test("should respond with a 404 status code", async () => {
-//       for (const userId of dataUserId) {
-//         update.mockReset();
-//         const response = await request(app)
-//           .put(`/users/${userId}`)
-//           .send({ language: "en", dark_mode: true, license: "MIT" });
-//         expect(update.mock.calls.length).toBe(0);
-//         expect(response.statusCode).toBe(404);
-//         expect(response.body).not.toBeNull();
-//       }
-//     });
-//   });
+  describe("given a valid user id but not the token user id", () => {
+    test("should respond with a 400 status code", async () => {
+      update.mockReset();
+      const response = await request(app)
+        .put(`/users/${2}`)
+        .send({ language: "en", dark_mode: true, license: "MIT" })
+        .set("Authorization", `Bearer ${token}`);
+      expect(update.mock.calls.length).toBe(0);
+      expect(response.statusCode).toBe(400);
+      expect(response.body).not.toBeNull();
+      expect(response.body.message).toBe("Not Authorized");
+    });
+  });
 
-//   describe("given an user id that does not exist", () => {
-//     const dataUserId = [2, 3, 4];
-//     test("should respond with a 404 status code", async () => {
-//       for (const userId of dataUserId) {
-//         update.mockReset();
-//         update.mockImplementation(() => {});
-//         const response = await request(app)
-//           .put(`/users/${userId}`)
-//           .send({ language: "en", dark_mode: true, license: "MIT" });
-//         expect(update.mock.calls.length).toBe(1);
-//         expect(response.statusCode).toBe(404);
-//         expect(response.body).not.toBeNull();
-//       }
-//     });
-//   });
-// });
+  describe("given an invalid user id", () => {
+    const dataUserId = ["12a0", "abc"];
+    test("should respond with a 400 status code", async () => {
+      for (const userId of dataUserId) {
+        update.mockReset();
+        const response = await request(app)
+          .put(`/users/${userId}`)
+          .set("Authorization", `Bearer ${token}`);
+        expect(findUnique.mock.calls.length).toBe(0);
+        expect(response.statusCode).toBe(400);
+        expect(response.body).not.toBeNull();
+        expect(response.body.message).toBe("Id must be a number");
+      }
+    });
+  });
 
-// describe("DELETE /users/:id", () => {
-//   describe("given a valid user id", () => {
-//     const dataUserId = [1, 2, 3];
-//     test("should respond with a 200 status code", async () => {
-//       for (const userId of dataUserId) {
-//         deleteUser.mockReset();
-//         deleteUser.mockImplementation(() => {
-//           return {
-//             user: {
-//               id: userId,
-//             },
-//           };
-//         });
-//         const response = await request(app).delete(`/users/${userId}`);
-//         expect(deleteUser.mock.calls.length).toBe(1);
-//         expect(deleteUser.mock.calls[0][0]).toBe(userId);
-//         expect(response.statusCode).toBe(200);
-//         expect(response.body).not.toBeNull();
-//       }
-//     });
-//   });
+  describe("given an user id that does not exist", () => {
+    test("should respond with a 400 status code", async () => {
+      update.mockReset();
+      update.mockImplementation(() => {});
+      const response = await request(app)
+        .put(`/users/${1}`)
+        .send({ language: "en", dark_mode: true, license: "MIT" })
+        .set("Authorization", `Bearer ${token}`);
+      expect(update.mock.calls.length).toBe(1);
+      expect(response.statusCode).toBe(400);
+      expect(response.body).not.toBeNull();
+      expect(response.body.message).toBe("Failed to update user");
+    });
+  });
+});
 
-//   describe("given an invalid user id", () => {
-//     const dataUserId = ["0", "abc"];
-//     test("should respond with a 404 status code", async () => {
-//       for (const userId of dataUserId) {
-//         deleteUser.mockReset();
-//         const response = await request(app).delete(`/users/${userId}`);
-//         expect(deleteUser.mock.calls.length).toBe(0);
-//         expect(response.statusCode).toBe(404);
-//         expect(response.body).not.toBeNull();
-//       }
-//     });
-//   });
+describe("DELETE /users/:id", () => {
+  describe("given a valid user id", () => {
+    test("should respond with a 200 status code", async () => {
+      deleteUser.mockReset();
+      deleteUser.mockImplementation(() => {});
+      const response = await request(app)
+        .delete(`/users/${1}`)
+        .set("Authorization", `Bearer ${token}`);
+      expect(response.statusCode).toBe(200);
+      expect(response.body).not.toBeNull();
+      expect(response.body.message).toBe("User deleted");
+    });
+  });
 
-//   describe("given an user id that does not exist", () => {
-//     const dataUserId = [2, 3, 4];
-//     test("should respond with a 404 status code", async () => {
-//       for (const userId of dataUserId) {
-//         deleteUser.mockReset();
-//         deleteUser.mockImplementation(() => {});
-//         const response = await request(app).delete(`/users/${userId}`);
-//         expect(deleteUser.mock.calls.length).toBe(1);
-//         expect(response.statusCode).toBe(404);
-//         expect(response.body).not.toBeNull();
-//       }
-//     });
-//   });
-// });
+  describe("given an invalid user id", () => {
+    const dataUserId = ["0", "abc"];
+    test("should respond with a 400 status code", async () => {
+      for (const userId of dataUserId) {
+        deleteUser.mockReset();
+        const response = await request(app)
+          .delete(`/users/${userId}`)
+          .set("Authorization", `Bearer ${token}`);
+        expect(deleteUser.mock.calls.length).toBe(0);
+        expect(response.statusCode).toBe(400);
+        expect(response.body).not.toBeNull();
+      }
+    });
+  });
+
+  describe("given an user id that does not exist", () => {
+    const dataUserId = [2, 3, 4];
+    test("should respond with a 400 status code", async () => {
+      for (const userId of dataUserId) {
+        deleteUser.mockReset();
+        deleteUser.mockImplementation(() => {});
+        const response = await request(app)
+          .delete(`/users/${userId}`)
+          .set("Authorization", `Bearer ${token}`);
+        expect(deleteUser.mock.calls.length).toBe(0);
+        expect(response.statusCode).toBe(400);
+        expect(response.body).not.toBeNull();
+      }
+    });
+  });
+});
