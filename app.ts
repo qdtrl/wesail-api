@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import bodyParser from "body-parser";
 import { verifyToken } from "./src/middleware/verifyToken";
 import { Request, Response, NextFunction } from "express";
 
@@ -20,6 +21,7 @@ export default function (database: any) {
 
   app
     .use(cors())
+    .use(bodyParser.json())
     .use((req: Request, res: Response, next: NextFunction) => {
       req.database = database;
       next();

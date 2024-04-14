@@ -5,9 +5,13 @@ import bcrypt from "bcrypt";
 export const register = async (req: Request, res: Response) => {
   const { email, name, firstName, lastName, password } = req.body;
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-
   try {
+    if (!email || !name || !firstName || !lastName || !password) {
+      throw new Error("All fields are required");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = await req.database.user.create({
       data: {
         name,
@@ -19,8 +23,8 @@ export const register = async (req: Request, res: Response) => {
     });
 
     res.status(201).json({ user });
-  } catch (error) {
-    res.status(400).json({ error });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
   }
 };
 
