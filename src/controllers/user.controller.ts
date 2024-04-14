@@ -3,11 +3,15 @@ import bcrypt from "bcrypt";
 
 export const getUsers = async (req: any, res: Response) => {
   try {
+    console.log("Salut din getUsers");
+
     const users = await req.database.user.findMany();
+    console.log(users);
+
     res.status(200).json(users);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Failed to get users!" });
+    res.status(400).json({ message: "Failed to get users!" });
   }
 };
 
@@ -20,7 +24,7 @@ export const getUser = async (req: any, res: Response) => {
     res.status(200).json(user);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Failed to get user!" });
+    res.status(400).json({ message: "Failed to get user!" });
   }
 };
 
@@ -53,7 +57,7 @@ export const updateUser = async (req: any, res: Response) => {
     res.status(200).json(rest);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Failed to update users!" });
+    res.status(400).json({ message: "Failed to update users!" });
   }
 };
 
@@ -72,6 +76,6 @@ export const deleteUser = async (req: any, res: Response) => {
     res.status(200).json({ message: "User deleted" });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Failed to delete users!" });
+    res.status(400).json({ message: "Failed to delete users!" });
   }
 };

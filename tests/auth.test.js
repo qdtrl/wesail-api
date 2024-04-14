@@ -99,6 +99,7 @@ describe("POST /login", () => {
         firstName: "John",
         lastName: "Doe",
       });
+      expect(response.body.token).not.toBeNull();
     });
   });
 
@@ -125,6 +126,7 @@ describe("POST /login", () => {
       expect(response.statusCode).toBe(400);
       expect(response.body).not.toBeNull();
       expect(response.body.error).toEqual("Invalid password");
+      expect(response.body.token).toBeUndefined();
     });
   });
 
@@ -144,6 +146,7 @@ describe("POST /login", () => {
       expect(response.statusCode).toBe(400);
       expect(response.body).not.toBeNull();
       expect(response.body.error).toEqual("User not found");
+      expect(response.body.token).toBeUndefined();
     });
   });
 });
@@ -155,6 +158,7 @@ describe("POST /logout", () => {
       expect(response.statusCode).toBe(200);
       expect(response.body).not.toBeNull();
       expect(response.body.message).toEqual("Logout Successful");
+      expect(response.body.token).toBeUndefined();
     });
   });
 });

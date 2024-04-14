@@ -6,25 +6,32 @@ export const verifyToken = (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.cookies.token;
-
-  if (!token) {
-    return res.status(403).send({ auth: false, message: "No token provided." });
-  }
-
-  jwt.verify(
-    token,
-    process.env.JWT_SECRET || "secret",
-    (err: any, decoded: any) => {
-      if (err) {
-        return res
-          .status(500)
-          .send({ auth: false, message: "Failed to authenticate token." });
-      }
-
-      // if everything good, save to request for use in other routes
-      req.userId = decoded.id;
-      next();
+  try {
+    const autorizationHeader = req.headers["authorization"];
+    if (!autorizationHeader) {
+      throw new Error("No authorization header provided");
     }
-  );
+
+    const token = autorizationHeader.split(" ")[1];
+
+    if (!token) {
+      throw new Error("No token provided");
+    }
+
+    jwt.verify(
+      token,
+      process.env.JWT_SECRET || "secret",
+      (err: any, decoded: any) => {
+        if (err) {
+          throw new Error("Unauthorized");
+        }
+
+        // if everything good, save to request for use in other routes
+        req.userId = decoded.id;
+        next();
+      }
+    );
+  } catch (error: any) {
+    res.status(401).json({ message: error.message });
+  }
 };
