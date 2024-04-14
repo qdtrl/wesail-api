@@ -35,6 +35,7 @@ export const login = async (req: Request, res: Response) => {
     if (!user) {
       throw new Error("User not found");
     }
+
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
       throw new Error("Invalid password");
@@ -61,8 +62,8 @@ export const login = async (req: Request, res: Response) => {
       })
       .status(200)
       .json({ user: userInfo, token });
-  } catch (error) {
-    res.status(500).json({ error });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
   }
 };
 
