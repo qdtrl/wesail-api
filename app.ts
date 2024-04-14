@@ -29,7 +29,7 @@ export default function (database: any) {
     });
 
   app.use("/auth", authRoute);
-  app.use("/user", verifyToken, userRoute);
+  app.use("/users", verifyToken, userRoute);
 
   return app;
 }

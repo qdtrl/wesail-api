@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
-export const register = async (req: any, res: Response) => {
+export const register = async (req: Request, res: Response) => {
   const { email, name, firstName, lastName, password } = req.body;
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -24,10 +24,10 @@ export const register = async (req: any, res: Response) => {
   }
 };
 
-export const login = async (req: any, res: Response) => {
+export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   try {
-    const user = await req.database.findUnique({ where: { email } });
+    const user = await req.database.user.findUnique({ where: { email } });
     if (!user) {
       throw new Error("User not found");
     }
@@ -62,6 +62,6 @@ export const login = async (req: any, res: Response) => {
   }
 };
 
-export const logout = (req: any, res: Response) => {
+export const logout = (req: Request, res: Response) => {
   res.clearCookie("token").status(200).json({ message: "Logout Successful" });
 };
